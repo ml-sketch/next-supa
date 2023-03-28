@@ -16,12 +16,12 @@ export const getAllItems = async (
 export const getAllItemsPaginated = async (
   supabase: AppSupabaseClient,
   options: PaginationOptions
-): Promise<Array<Table<'items'>>> => {
+): Promise<{ data: Array<Table<'items'>>; totalCount: number }> => {
   const { page, limit } = options;
 
-  const { data, error } = await supabase
+  const { data, error, count } = await supabase
     .from('items')
-    .select('*')
+    .select('*', { count: 'exact' })
     .range((page - 1) * limit, page * limit - 1);
 
   if (error) {
@@ -29,7 +29,7 @@ export const getAllItemsPaginated = async (
     throw error;
   }
 
-  return data;
+  return { data, totalCount: count };
 };
 
 export const insertItem = async (

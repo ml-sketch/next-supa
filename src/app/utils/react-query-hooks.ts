@@ -19,9 +19,11 @@ import { toast } from 'react-hot-toast';
 
 export const useInfiniteItems = (options: PaginationOptions) => {
   const { limit } = options;
-  const maxItems = 500; // Hard floor to avoid abuse. Set the maximum number of items
 
-  return useInfiniteQuery<Array<Table<'items'>>, Error>(
+  return useInfiniteQuery<
+    { data: Array<Table<'items'>>; totalCount: number },
+    Error
+  >(
     ['items'],
     async ({ pageParam = 1 }) => {
       return getAllItemsPaginated(supabaseClient, { page: pageParam, limit });
@@ -29,10 +31,12 @@ export const useInfiniteItems = (options: PaginationOptions) => {
     {
       getNextPageParam: (lastPage, allPages) => {
         const totalFetchedItems = allPages.reduce(
-          (acc, curr) => acc + curr.length,
+          (acc, curr) => acc + curr.data.length,
           0
         );
-        if (totalFetchedItems < maxItems && lastPage.length === limit) {
+        const totalCount = lastPage.totalCount;
+
+        if (totalFetchedItems < totalCount) {
           return allPages.length + 1;
         }
         return false;
@@ -40,6 +44,7 @@ export const useInfiniteItems = (options: PaginationOptions) => {
     }
   );
 };
+
 export const useItems = (initialData: Array<Table<'items'>>) => {
   return useQuery<Array<Table<'items'>>>(
     ['items'],

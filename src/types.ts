@@ -6,6 +6,5 @@ export type Table<T extends keyof Database['public']['Tables']> =
   Database['public']['Tables'][T]['Row'];
 
 export interface PaginationOptions {
-  page: number;
   limit: number;
 }

@@ -18,7 +18,10 @@ export const ItemsList = () => {
       </h1>
       {data && (
         <InfiniteScroll
-          dataLength={data.pages.length * 3}
+          dataLength={data.pages.reduce(
+            (acc, curr) => acc + curr.data.length,
+            0
+          )}
           next={fetchNextPage}
           hasMore={hasNextPage}
           loader={<h4>Loading...</h4>}
@@ -29,7 +32,7 @@ export const ItemsList = () => {
               key={pageIndex}
               className="list-none space-y-2 m-0 pb-3 bg-white"
             >
-              {page.map((item) => (
+              {page.data.map((item) => (
                 <Link
                   href={`/item/${item.id}`}
                   className="px-3 block cursor-pointer pt-4 pb-3 text-left text-sm font-semibold text-gray-900"
