@@ -1,8 +1,14 @@
-import { Table } from '@/types';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Table, PaginationOptions } from '@/types';
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  useInfiniteQuery,
+} from '@tanstack/react-query';
 import {
   deleteItem,
   getAllItems,
+  getAllItemsPaginated,
   getItem,
   insertItem,
   updateItem,
@@ -11,11 +17,51 @@ import supabaseClient from './supabase-browser';
 import { useRef } from 'react';
 import { toast } from 'react-hot-toast';
 
+export const useInfiniteItems = (options: PaginationOptions) => {
+  const { limit } = options;
+  const maxItems = 500; // Hard floor to avoid abuse. Set the maximum number of items
+
+  return useInfiniteQuery<Array<Table<'items'>>, Error>(
+    ['items'],
+    async ({ pageParam = 1 }) => {
+      return getAllItemsPaginated(supabaseClient, { page: pageParam, limit });
+    },
+    {
+      getNextPageParam: (lastPage, allPages) => {
+        const totalFetchedItems = allPages.reduce(
+          (acc, curr) => acc + curr.length,
+          0
+        );
+        if (totalFetchedItems < maxItems && lastPage.length === limit) {
+          return allPages.length + 1;
+        }
+        return false;
+      },
+    }
+  );
+};
 export const useItems = (initialData: Array<Table<'items'>>) => {
   return useQuery<Array<Table<'items'>>>(
     ['items'],
     async () => {
       return getAllItems(supabaseClient);
+    },
+    {
+      initialData,
+    }
+  );
+};
+
+export const useItemsPaginated = (
+  initialData: Array<Table<'items'>>,
+  options: PaginationOptions
+) => {
+  const { page, limit } = options;
+
+  return useQuery<Array<Table<'items'>>>(
+    ['items', page, limit],
+    async () => {
+      return getAllItemsPaginated(supabaseClient, { page, limit });
     },
     {
       initialData,

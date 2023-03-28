@@ -1,9 +1,28 @@
-import { AppSupabaseClient, Table } from '@/types';
+import { AppSupabaseClient, Table, PaginationOptions } from '@/types';
 
 export const getAllItems = async (
   supabase: AppSupabaseClient
 ): Promise<Array<Table<'items'>>> => {
   const { data, error } = await supabase.from('items').select('*');
+
+  if (error) {
+    console.log(error);
+    throw error;
+  }
+
+  return data;
+};
+
+export const getAllItemsPaginated = async (
+  supabase: AppSupabaseClient,
+  options: PaginationOptions
+): Promise<Array<Table<'items'>>> => {
+  const { page, limit } = options;
+
+  const { data, error } = await supabase
+    .from('items')
+    .select('*')
+    .range((page - 1) * limit, page * limit - 1);
 
   if (error) {
     console.log(error);
