@@ -5,6 +5,7 @@ import createClient from '../../utils/supabase-server';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import 'dayjs/locale/ro';
+import Balancer from 'react-wrap-balancer';
 
 export default async function Item({
   params,
@@ -15,6 +16,7 @@ export default async function Item({
 }) {
   const supabase = createClient();
   const { itemId } = params;
+
   dayjs.extend(relativeTime);
   dayjs.locale('ro');
   try {
@@ -25,7 +27,9 @@ export default async function Item({
           {' '}
           Back to dashboard
         </Link>
-        <h1>{item.name}</h1>
+        <h1>
+          <Balancer>{item.name}</Balancer>
+        </h1>
         <h3>{dayjs().to(item.created_at)}</h3>
         <p>{item.description}</p>
       </div>
